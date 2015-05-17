@@ -101,6 +101,13 @@ for( i in seq_len(nrow(activity_data2))) {
     }
 }
 ```
+
+```{r echo=FALSE}
+remove(i)
+remove(k)
+remove(val)
+```
+
 ### Check number of NA rows after update, it should be 0.
 ```{r}
 isNA  <- is.na(activity_data2$steps)
@@ -142,3 +149,28 @@ The mean and median are name same after applying the impute strategy. Both mean 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+To view activity patterns on weekdays and weekends, prepare the data to identify weekdays and weekends.
+```{r}
+require(lubridate)
+
+# Create blank column for dayType
+activity_data2$dayType <- ""
+
+# Assign week day type value
+for( i in seq_len(nrow(activity_data2))) {
+    wd <- wday(ymd(activity_data2[i, 2]))
+    if(wd==0 || wd == 6) 
+        activity_data2[i, 4] <- "Weekend"
+    else
+        activity_data2[i, 4] <- "Weekday"
+}
+```
+
+Prepare date for plotting.
+```{r}
+spid <- group_by(activity_data2, interval, dayType) %>% summarize(ave=mean(steps,na.rm = TRUE))
+require(ggplot2)
+ggplot(spid, aes(interval, ave)) + geom_line() + facet_wrap(~dayType, nrow = 2, ncol=1) + labs(x="5-Minute Interval") + labs(y = "Average number of steps") + labs(title="Activity patterns on weekdays and weekends")
+```
+
+As seen in the plots it is clear that activity during the weekends is higher.
